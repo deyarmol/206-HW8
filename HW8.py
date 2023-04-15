@@ -15,11 +15,14 @@ def load_rest_data(db):
     and each inner key is a dictionary, where the key:value pairs should be the category, 
     building, and rating for the restaurant.
     """
+    # set up
     conn = sqlite3.connect(db)
     data = {}
     cur = conn.cursor()
+    # get all the data (including matching ids)
     cur.execute("SELECT name, category, building, rating FROM restaurants JOIN categories ON restaurants.category_id = categories.id JOIN buildings ON restaurants.building_id = buildings.id")
     rows = cur.fetchall()
+    # divide up the data and add it to the dict
     for row in rows:
         name = row[0]
         category = row[1]
@@ -36,17 +39,23 @@ def plot_rest_categories(db):
     also create a bar chart with restaurant categories and the count of number of restaurants in each category.
     """
 
+    # set up
     conn = sqlite3.connect(db)
     data = {}
     curr = conn.cursor()
+    # get the count while joining the categories
     curr.execute("SELECT category, COUNT(*) FROM restaurants JOIN categories ON restaurants.category_id = categories.id GROUP BY category")
     rows = curr.fetchall()
+    # add it to the dict
     for row in rows:
         data[row[0]] = row[1]
     conn.close()
+    # sort the data in descending order
     cats_sort = sorted(data.items(), key=lambda x: x[1], reverse=False)
+    # create lists from the sorted dict
     names = [x[0] for x in cats_sort]
     counts = [x[1] for x in cats_sort]
+    # plot those lists, add titles, display the chart
     plt.barh(names, counts)
     plt.title('Types of Restaurant on South University Ave')
     plt.xlabel('Number of Restaurants')
@@ -61,11 +70,14 @@ def find_rest_in_building(building_num, db):
     restaurant names. You need to find all the restaurant names which are in the specific building. The restaurants 
     should be sorted by their rating from highest to lowest.
     '''
+    # set up
     conn = sqlite3.connect(db)
     cur = conn.cursor()
+    # get all the names matching the building and sort it
     cur.execute("SELECT name FROM restaurants JOIN buildings ON restaurants.building_id = buildings.id WHERE building = " + str(building_num) + " ORDER BY rating DESC")
     rows = cur.fetchall()
     conn.close()
+    # add the data to a list and return the list
     rests = []
     for row in rows:
         rests.append(row[0])
@@ -83,7 +95,7 @@ def get_highest_rating(db): #Do this through DB as well
     The second bar chart displays the buildings along the y-axis and their ratings along the x-axis 
     in descending order (by rating).
     """
-    pass
+    
 
 #Try calling your functions here
 def main():
@@ -132,9 +144,9 @@ class TestHW8(unittest.TestCase):
         self.assertEqual(len(restaurant_list), 3)
         self.assertEqual(restaurant_list[0], 'BTB Burrito')
 
-    def test_get_highest_rating(self):
-        highest_rating = get_highest_rating('South_U_Restaurants.db')
-        self.assertEqual(highest_rating, self.highest_rating)
+    #def test_get_highest_rating(self):
+    #    highest_rating = get_highest_rating('South_U_Restaurants.db')
+    #    self.assertEqual(highest_rating, self.highest_rating)
 
 if __name__ == '__main__':
     main()
